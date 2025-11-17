@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="bn"> 
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>This Chatbot Developed By Tamim Hasan</title>
+
+  <style>
+    /* 1. বেসিক রিসেট এবং চ্যাট এনভায়রনমেন্ট */
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 850px;
+      margin: 0 auto; 
+      padding: 0;
+      background: #f0f2f5; 
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 2. ✅ আপডেট করা হেডার ডিজাইন (ফুল উইডথ) */
+    .chat-header {
+      padding: 15px 10px;
+      background: white; 
+      color: #333;
+      font-size: 1.1em;
+      font-weight: bold;
+      display: flex; 
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; 
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); 
+    }
+    
+    /* 3. হেডার কন্টেন্ট */
+    .header-content {
+        display: flex;
+        align-items: center;
+    }
+    
+    /* 4. আইকন এবং নাম স্টাইল */
+    .bot-icon {
+        width: 35px;
+        height: 35px;
+        margin-right: 15px;
+        color: #007bff;
+        flex-shrink: 0;
+    }
+    
+    /* নামের গ্রেডিয়েন্ট এবং শিমার */
+    .header-name {
+        font-size: 1.5em;
+        background: linear-gradient(45deg, #007bff, #00c6ff, #5aa0ff); 
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        white-space: nowrap;
+    }
+    
+    @keyframes shimmer { 
+        0% { background-position: -200px 0; } 
+        100% { background-position: 200px 0; } 
+    }
+    .header-name::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5) 40%, transparent 60%); 
+        background-size: 200px 100%;
+        animation: shimmer 5s infinite linear;
+        pointer-events: none;
+    }
+
+    /* 5. ✅ সোশ্যাল আইকন স্টাইল */
+    .social-icons {
+        display: flex; 
+        gap: 15px;
+    }
+    .social-icons a {
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .social-icons a:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* নিজস্ব লোগো কালার */
+    .facebook { background: #1877f2; }
+    .telegram { background: #0088cc; }
+
+    .social-icons svg {
+        width: 22px; 
+        height: 22px;
+    }
+    
+    /* 6. চ্যাট এবং মেসেজ স্টাইল */
+    #output { 
+        flex-grow: 1; 
+        padding: 20px; 
+        padding-bottom: 90px; 
+        overflow-y: auto; 
+    }
+    .message-container { 
+        display: flex; 
+        margin-bottom: 15px; 
+        align-items: flex-end; 
+    }
+    .profile-pic { 
+        width: 30px; 
+        height: 30px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        margin-right: 8px; 
+        flex-shrink: 0; 
+    }
+    .message-bubble { 
+        padding: 10px 14px; 
+        border-radius: 18px; 
+        max-width: 70%; 
+        line-height: 1.4; 
+        word-wrap: break-word; 
+        white-space: pre-wrap; 
+    }
+    .user-message { 
+        justify-content: flex-end; 
+    }
+    .user-message .message-bubble { 
+        background: #0084ff; 
+        color: white; 
+        border-bottom-right-radius: 4px; 
+    }
+    .user-message .profile-pic { 
+        order: 2; 
+        margin-left: 8px; 
+        margin-right: 0; 
+    }
+    .ai-message .message-bubble { 
+        background: #e4e6eb; 
+        color: #000; 
+        border-bottom-left-radius: 4px; 
+    }
+    
+    /* 7. ফুটার এবং বাটন স্টাইল */
+    .chat-footer { 
+        position: fixed; 
+        bottom: 0; 
+        max-width: 850px; 
+        width: 100%; 
+        background: white; 
+        padding: 10px 20px; 
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1); 
+        display: flex; 
+        align-items: center; 
+        box-sizing: border-box; 
+    }
+    #prompt { 
+        flex-grow: 1; 
+        padding: 8px 12px; 
+        border: 1px solid #ccc; 
+        border-radius: 20px; 
+        resize: none; 
+        min-height: 40px; 
+        max-height: 100px; 
+        margin-right: 10px; 
+        box-sizing: border-box; 
+        overflow-y: auto; 
+    }
+    #sendButton { 
+        padding: 8px 15px; 
+        border-radius: 20px; 
+        margin-top: 0; 
+        height: 40px; 
+        flex-shrink: 0; 
+        border: 1px solid rgba(255, 255, 255, 0.4); 
+        background: linear-gradient(145deg, rgba(0, 123, 255, 0.8), rgba(0, 198, 255, 0.9)); 
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); 
+        transition: transform 0.1s ease; 
+    }
+    #sendButton:hover { 
+        transform: translateY(-1px); 
+    }
+    #sendButton:disabled { 
+        background: #888; 
+        box-shadow: none; 
+        cursor: not-allowed; 
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="chat-header">
+    <div class="header-content">
+        <svg class="bot-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+        <span id="headerName" class="header-name">Tamim Hasan</span>
+    </div>
+    
+    <div class="social-icons">
+        <a href="https://www.facebook.com/TRADER.TAMIM.3" target="_blank" title="Facebook" class="facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.77 12c0-5.96-4.81-10.77-10.77-10.77S1.23 6.04 1.23 12c0 5.34 3.88 9.77 8.98 10.51v-7.39h-2.68v-3.12h2.68v-2.37c0-2.66 1.58-4.24 4.14-4.24 1.18 0 2.44.21 2.44.21v2.79h-1.42c-1.32 0-1.74.82-1.74 1.66v2.01h3.12l-.5 3.12h-2.62v7.39c5.1-.74 8.98-5.17 8.98-10.51z"/>
+            </svg>
+        </a>
+        <a href="https://t.me/TRADER_TAMIM_3" target="_blank" title="Telegram" class="telegram">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.5 17.5l-3.5-3.5 10.5-6.5zm-5-3.5L4 12.5l14-8.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 7.5L8.5 16.5 7 13.5l10.5-6.5z"/>
+            </svg>
+        </a>
+    </div>
+  </div>
+
+  <div id="output">
+    <div class="message-container ai-message">
+        <img src="https://i.postimg.cc/8zm0FQcR/Image-Download-17-11-2025-12-31-14.jpg" class="profile-pic" alt="AI Profile">
+        <div class="message-bubble">
+            😍 স্বাগতম! আমাকে বানিয়েছেন Tamim Hasan 😊
+        </div>
+    </div>
+  </div>
+
+  <div class="chat-footer">
+    <textarea id="prompt" placeholder="একটি মেসেজ লিখুন..." onkeypress="if(event.keyCode==13 && !event.shiftKey) { sendRequest(); event.preventDefault(); }">হাই!</textarea>
+    <button id="sendButton" onclick="sendRequest()">Send</button>
+  </div>
+
+  <script>
+    const userProfilePic = "https://i.postimg.cc/zfPpWJrP/3135715.png"; 
+    const aiProfilePic = "https://i.postimg.cc/8zm0FQcR/Image-Download-17-11-2025-12-31-14.jpg"; 
+    const key = "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";
+    
+    // --- চ্যাট লজিক ---
+
+    function createMessage(content, role) {
+        const isUser = role === 'user';
+        const container = document.createElement('div');
+        container.classList.add('message-container', isUser ? 'user-message' : 'ai-message');
+        
+        const pic = document.createElement('img');
+        pic.classList.add('profile-pic');
+        pic.src = isUser ? userProfilePic : aiProfilePic;
+        pic.alt = isUser ? "User Profile" : "AI Profile";
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.classList.add('message-content');
+
+        const bubble = document.createElement('div');
+        bubble.classList.add('message-bubble');
+        bubble.innerHTML = content;
+        
+        contentDiv.appendChild(bubble);
+        container.appendChild(pic);
+        container.appendChild(contentDiv);
+
+        return container;
+    }
+
+    function appendMessage(element) {
+        const outputDiv = document.getElementById("output");
+        outputDiv.appendChild(element);
+        outputDiv.scrollTop = outputDiv.scrollHeight; 
+    }
+    
+    function typeResponse(element, text) {
+        const bubble = element.querySelector('.message-bubble');
+        const outputDiv = document.getElementById("output");
+        let i = 0;
+        const speed = 15;
+
+        return new Promise(resolve => {
+            function typing() {
+                if (i < text.length) {
+                    bubble.textContent += text.charAt(i);
+                    i++;
+                    outputDiv.scrollTop = outputDiv.scrollHeight;
+                    setTimeout(typing, speed);
+                } else {
+                    resolve();
+                }
+            }
+            typing();
+        });
+    }
+
+    async function sendRequest() {
+      const promptTextarea = document.getElementById("prompt");
+      const prompt = promptTextarea.value.trim();
+      const sendButton = document.getElementById("sendButton");
+
+      if (!prompt) return;
+
+      appendMessage(createMessage(prompt, 'user'));
+      promptTextarea.value = ''; 
+
+      const loadingBubble = createMessage('...', 'ai');
+      appendMessage(loadingBubble);
+      sendButton.disabled = true;
+
+      try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + key
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant", 
+            messages: [
+              { role: "user", content: prompt }
+            ],
+            temperature: 0.7 
+          })
+        });
+
+        const data = await res.json();
+        
+        loadingBubble.remove();
+        
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          const responseText = data.choices[0].message.content;
+          
+          const aiMessage = createMessage('', 'ai');
+          appendMessage(aiMessage);
+          await typeResponse(aiMessage, responseText); 
+
+        } else if (data.error) {
+          const errorMsg = '❌ API ত্রুটি: ' + data.error.message;
+          appendMessage(createMessage(errorMsg, 'ai'));
+        } else {
+          const unknownMsg = '⚠️ অজানা উত্তর: ' + JSON.stringify(data, null, 2);
+          appendMessage(createMessage(unknownMsg, 'ai'));
+        }
+
+      } catch (err) {
+        loadingBubble.remove();
+        const fetchErrorMsg = '❌ সংযোগ ত্রুটি: ' + err.message;
+        appendMessage(createMessage(fetchErrorMsg, 'ai'));
+      } finally {
+        sendButton.disabled = false;
+      }
+    }
+  </script>
+
+</body>
+</html>
